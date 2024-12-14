@@ -36,6 +36,7 @@ class AtomicData(torch_geometric.data.Data):
     stress: torch.Tensor
     virials: torch.Tensor
     dipole: torch.Tensor
+    atomic_dipoles: torch.Tensor
     charges: torch.Tensor
     weight: torch.Tensor
     energy_weight: torch.Tensor
@@ -61,6 +62,7 @@ class AtomicData(torch_geometric.data.Data):
         stress: Optional[torch.Tensor],  # [1,3,3]
         virials: Optional[torch.Tensor],  # [1,3,3]
         dipole: Optional[torch.Tensor],  # [, 3]
+        atomic_dipoles: Optional[torch.Tensor], # [n_nodes, 3]
         charges: Optional[torch.Tensor],  # [n_nodes, ]
     ):
         # Check shapes
@@ -82,6 +84,7 @@ class AtomicData(torch_geometric.data.Data):
         assert stress is None or stress.shape == (1, 3, 3)
         assert virials is None or virials.shape == (1, 3, 3)
         assert dipole is None or dipole.shape[-1] == 3
+        assert atomic_dipoles is None or atomic_dipoles.shape[-1] == (num_nodes, 3)
         assert charges is None or charges.shape == (num_nodes,)
         # Aggregate data
         data = {
@@ -102,6 +105,7 @@ class AtomicData(torch_geometric.data.Data):
             "stress": stress,
             "virials": virials,
             "dipole": dipole,
+            "atomic_dipoles": atomic_dipoles,
             "charges": charges,
         }
         super().__init__(**data)
@@ -186,6 +190,11 @@ class AtomicData(torch_geometric.data.Data):
             if config.dipole is not None
             else None
         )
+        atomic_dipoles = (
+            torch.tensor(config.atomic_dipoles, dtype=torch.get_default_dtype())
+            if config.atomic_dipoles is not None
+            else None
+        )
         charges = (
             torch.tensor(config.charges, dtype=torch.get_default_dtype())
             if config.charges is not None
@@ -209,6 +218,7 @@ class AtomicData(torch_geometric.data.Data):
             stress=stress,
             virials=virials,
             dipole=dipole,
+            atomic_dipoles=atomic_dipoles,
             charges=charges,
         )
 
