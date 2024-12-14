@@ -466,10 +466,15 @@ class MACELoss(Metric):
             self.Mus_computed += 1.0
             self.mus.append(batch.dipole)
             self.delta_mus.append(batch.dipole - output["dipole"])
-            self.delta_mus_per_atom.append(
-                (batch.dipole - output["dipole"])
-                / (batch.ptr[1:] - batch.ptr[:-1]).unsqueeze(-1)
-            )
+            if batch.atomic_dipoles is None:
+                self.delta_mus_per_atom.append(
+                    (batch.dipole - output["dipole"])
+                    / (batch.ptr[1:] - batch.ptr[:-1]).unsqueeze(-1)
+                )
+            else:
+                self.delta_mus_per_atom.append(
+                    batch.atomic_dipoles - output["atomic_dipoles"]
+                )
 
     def convert(self, delta: Union[torch.Tensor, List[torch.Tensor]]) -> np.ndarray:
         if isinstance(delta, list):
