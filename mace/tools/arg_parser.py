@@ -386,6 +386,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
             "virials",
             "stress",
             "dipole",
+            "atomic_dipoles",
             "huber",
             "universal",
             "energy_forces_dipole",
