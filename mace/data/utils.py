@@ -37,6 +37,7 @@ class Configuration:
     stress: Optional[Stress] = None  # eV/Angstrom^3
     virials: Optional[Virials] = None  # eV
     dipole: Optional[Vector] = None  # Debye
+    atomic_dipoles: Optional[Vector] = None  # Debye
     charges: Optional[Charges] = None  # atomic unit
     cell: Optional[Cell] = None
     pbc: Optional[Pbc] = None
@@ -90,6 +91,7 @@ def config_from_atoms_list(
     stress_key="REF_stress",
     virials_key="REF_virials",
     dipole_key="REF_dipole",
+    atomic_dipoles_key="REF_atomic_dipoles",
     charges_key="REF_charges",
     config_type_weights: Dict[str, float] = None,
 ) -> Configurations:
@@ -107,6 +109,7 @@ def config_from_atoms_list(
                 stress_key=stress_key,
                 virials_key=virials_key,
                 dipole_key=dipole_key,
+                atomic_dipoles_key=atomic_dipoles_key,
                 charges_key=charges_key,
                 config_type_weights=config_type_weights,
             )
@@ -121,6 +124,7 @@ def config_from_atoms(
     stress_key="REF_stress",
     virials_key="REF_virials",
     dipole_key="REF_dipole",
+    atomic_dipoles_key="REF_atomic_dipoles",
     charges_key="REF_charges",
     config_type_weights: Dict[str, float] = None,
 ) -> Configuration:
@@ -133,6 +137,7 @@ def config_from_atoms(
     stress = atoms.info.get(stress_key, None)  # eV / Ang ^ 3
     virials = atoms.info.get(virials_key, None)
     dipole = atoms.info.get(dipole_key, None)  # Debye
+    atomic_dipoles = atoms.arrays.get(atomic_dipoles_key, None)  # Debye
     # Charges default to 0 instead of None if not found
     charges = atoms.arrays.get(charges_key, np.zeros(len(atoms)))  # atomic unit
     atomic_numbers = np.array(
@@ -165,6 +170,9 @@ def config_from_atoms(
     if dipole is None:
         dipole = np.zeros(3)
         # dipoles_weight = 0.0
+    if atomic_dipoles is None:
+        atomic_dipoles = np.zeros(np.shape(atoms.positions)) 
+        # dipoles_weight = 0.0
 
     return Configuration(
         atomic_numbers=atomic_numbers,
@@ -174,6 +182,7 @@ def config_from_atoms(
         stress=stress,
         virials=virials,
         dipole=dipole,
+        atomic_dipoles=atomic_dipoles,
         charges=charges,
         weight=weight,
         energy_weight=energy_weight,
@@ -210,6 +219,7 @@ def load_from_xyz(
     stress_key: str = "REF_stress",
     virials_key: str = "REF_virials",
     dipole_key: str = "REF_dipole",
+    atomic_dipoles_key: str = "REF_atomic_dipoles",
     charges_key: str = "REF_charges",
     extract_atomic_energies: bool = False,
     keep_isolated_atoms: bool = False,
@@ -285,6 +295,7 @@ def load_from_xyz(
         stress_key=stress_key,
         virials_key=virials_key,
         dipole_key=dipole_key,
+        atomic_dipoles_key=atomic_dipoles_key,
         charges_key=charges_key,
     )
     return atomic_energies_dict, configs
@@ -341,6 +352,7 @@ def save_dataset_as_HDF5(dataset: List, out_name: str) -> None:
             grp["stress"] = data.stress
             grp["virials"] = data.virials
             grp["dipole"] = data.dipole
+            grp["atomic_dipoles"] = data.atomic_dipoles
             grp["charges"] = data.charges
 
 
@@ -362,7 +374,7 @@ def save_AtomicData_to_HDF5(data, i, h5_file) -> None:
     grp["energy"] = data.energy
     grp["stress"] = data.stress
     grp["virials"] = data.virials
-    grp["dipole"] = data.dipole
+    grp["atomic_dipoles"] = data.atomic_dipoles
     grp["charges"] = data.charges
 
 
@@ -378,6 +390,7 @@ def save_configurations_as_HDF5(configurations: Configurations, _, h5_file) -> N
         subgroup["stress"] = write_value(config.stress)
         subgroup["virials"] = write_value(config.virials)
         subgroup["dipole"] = write_value(config.dipole)
+        subgroup["atomic_dipoles"] = write_value(config.atomic_dipoles)
         subgroup["charges"] = write_value(config.charges)
         subgroup["cell"] = write_value(config.cell)
         subgroup["pbc"] = write_value(config.pbc)
