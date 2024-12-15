@@ -190,7 +190,8 @@ class MACECalculator(Calculator):
             )
         if model_type in ["EnergyDipoleMACE", "DipoleMACE"]:
             dipole = torch.zeros(num_models, 3, device=self.device)
-            dict_of_tensors.update({"dipole": dipole})
+            atomic_dipoles = torch.zeros(num_models, num_atoms, 3, device=self.device)
+            dict_of_tensors.update({"dipole": dipole,"atomic_dipoles": atomic_dipoles})
         return dict_of_tensors
 
     def _atoms_to_batch(self, atoms):
@@ -254,6 +255,7 @@ class MACECalculator(Calculator):
                     ret_tensors["stress"][i] = out["stress"].detach()
             if self.model_type in ["DipoleMACE", "EnergyDipoleMACE"]:
                 ret_tensors["dipole"][i] = out["dipole"].detach()
+                ret_tensors["atomic_dipoles"][i] = out["atomic_dipoles"].detach()
 
         self.results = {}
         if self.model_type in ["MACE", "EnergyDipoleMACE"]:
@@ -302,6 +304,9 @@ class MACECalculator(Calculator):
         if self.model_type in ["DipoleMACE", "EnergyDipoleMACE"]:
             self.results["dipole"] = (
                 torch.mean(ret_tensors["dipole"], dim=0).cpu().numpy()
+            )
+            self.results["atomic_dipoles"] = (
+                torch.mean(ret_tensors["atomic_dipoles"], dim=0).cpu().numpy()
             )
             if self.num_models > 1:
                 self.results["dipole_var"] = (
