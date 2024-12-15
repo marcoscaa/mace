@@ -158,6 +158,7 @@ def run(args: argparse.Namespace) -> None:
             stress_key=args.stress_key,
             virials_key=args.virials_key,
             dipole_key=args.dipole_key,
+            atomic_dipoles_key=args.atomic_dipoles_key,
             charges_key=args.charges_key,
             keep_isolated_atoms=args.keep_isolated_atoms,
         )
@@ -343,6 +344,13 @@ def run(args: argparse.Namespace) -> None:
         loss_fn = modules.DipoleSingleLoss(
             dipole_weight=args.dipole_weight,
         )
+    elif args.loss == "atomic_dipoles":
+        assert (
+            dipole_only is True
+        ), "atomic dipole loss can only be used with AtomicDipolesMACE model"
+        loss_fn = modules.AtomicDipoleSingleLoss(
+            dipole_weight=args.dipole_weight,
+        )
     elif args.loss == "energy_forces_dipole":
         assert dipole_only is False and compute_dipole is True
         loss_fn = modules.WeightedEnergyForcesDipoleLoss(
@@ -516,7 +524,7 @@ def run(args: argparse.Namespace) -> None:
         )
     elif args.model == "AtomicDipolesMACE":
         # std_df = modules.scaling_classes["rms_dipoles_scaling"](train_loader)
-        assert args.loss == "dipole", "Use dipole loss with AtomicDipolesMACE model"
+        assert args.loss == "dipole" or args.loss == "atomic_dipoles", "Use dipole loss with AtomicDipolesMACE model"
         assert (
             args.error_table == "DipoleRMSE"
         ), "Use error_table DipoleRMSE with AtomicDipolesMACE model"
