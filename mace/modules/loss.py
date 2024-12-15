@@ -345,7 +345,7 @@ class AtomicDipoleSingleLoss(torch.nn.Module):
     def __init__(self, dipole_weight=1.0) -> None:
         super().__init__()
         self.register_buffer(
-            "atomic_dipole_weight",
+            "dipole_weight",
             torch.tensor(dipole_weight, dtype=torch.get_default_dtype()),
         )
 

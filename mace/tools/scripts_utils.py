@@ -42,6 +42,7 @@ def get_dataset_from_xyz(
     stress_key: str = "REF_stress",
     virials_key: str = "virials",
     dipole_key: str = "dipoles",
+    atomic_dipoles_key: str = "atomic_dipoles",
     charges_key: str = "charges",
 ) -> Tuple[SubsetCollection, Optional[Dict[int, float]]]:
     """Load training and test dataset from xyz file"""
@@ -52,7 +53,7 @@ def get_dataset_from_xyz(
         forces_key=forces_key,
         stress_key=stress_key,
         virials_key=virials_key,
-        dipole_key=dipole_key,
+        atomic_dipoles_key=atomic_dipoles_key,
         charges_key=charges_key,
         extract_atomic_energies=True,
         keep_isolated_atoms=keep_isolated_atoms,
@@ -68,7 +69,7 @@ def get_dataset_from_xyz(
             forces_key=forces_key,
             stress_key=stress_key,
             virials_key=virials_key,
-            dipole_key=dipole_key,
+            atomic_dipoles_key=atomic_dipoles_key,
             charges_key=charges_key,
             extract_atomic_energies=False,
         )
@@ -91,7 +92,7 @@ def get_dataset_from_xyz(
             config_type_weights=config_type_weights,
             energy_key=energy_key,
             forces_key=forces_key,
-            dipole_key=dipole_key,
+            atomic_dipoles_key=atomic_dipoles_key,
             stress_key=stress_key,
             virials_key=virials_key,
             charges_key=charges_key,
@@ -362,6 +363,13 @@ def get_loss_fn(
             dipole_only is True
         ), "dipole loss can only be used with AtomicDipolesMACE model"
         loss_fn = modules.DipoleSingleLoss(
+            dipole_weight=dipole_weight,
+        )
+    elif loss == "atomic_dipoles":
+        assert (
+            dipole_only is True
+        ), "atoimc dipole loss can only be used with AtomicDipolesMACE model"
+        loss_fn = modules.AtomicDipoleSingleLoss(
             dipole_weight=dipole_weight,
         )
     elif loss == "energy_forces_dipole":
